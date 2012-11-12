@@ -41,14 +41,11 @@ get '/teamdb' => sub {
     }
 
     elsif ( $all eq "false" ) {
-        @response = $user->check_params(
+        $profile = $user->check_params(
             name     => $name,
             position => $position,
             grade    => $grade
         );
-        foreach my $stat ( @response ) {
-            $profile .= $stat;
-        }
     }
 
     elsif ( $all eq "newmember" ) {

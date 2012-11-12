@@ -76,9 +76,15 @@ sub get_member_list {
 sub check_params {
     my ( $self, %opts ) = @_;
 
-    my ( @queries, $not_queried );
+    my ( @queries, $not_queried, $missing_link, @keys );
+
+    my $dbh = DBI->connect(
+        'dbi:SQLite:dbname=teamdb'
+    );
 
     foreach my $var ( keys %opts ) {
+        push @keys, $var;
+
         if ( $opts{$var} ne '' ) {
             push @queries, $opts{$var};
         }
@@ -89,7 +95,22 @@ sub check_params {
 
     push @queries, $not_queried;
 
-    return @queries;
+    print "$queries[0]\n$queries[1]\n$queries[2]\n";
+    print "$keys[0]\n$keys[1]\n$keys[2]\n";
+
+    my $puzzle = $dbh->selectall_arrayref(
+        "select $queries[2] as data from team
+            where $keys[2]=\"$queries[0]\"
+            and $keys[1]=\"$queries[1]\";", { Slice => {} }
+    );
+
+    #NOT WORKING, DON'T USE
+
+    foreach my $piece ( @$puzzle ) {
+        $missing_link = $piece->{data};
+    }
+
+    return $missing_link;
 }
 
 1;
