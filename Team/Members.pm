@@ -1,5 +1,7 @@
 package Team::Members;
 
+#Written by James Albert <james.albert72@gmail.com>
+
 use strict;
 use warnings;
 use DBI;
