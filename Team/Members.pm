@@ -162,4 +162,25 @@ sub write_file_to_sql {
     return 'success';
 }
 
+sub get_files_from_sql {
+    my $self = shift;
+
+    my @available_projects;
+
+    my $dbh = DBI->connect(
+        'dbi:SQLite:dbname=teamdb'
+    );
+
+    my $files = $dbh->selectall_arrayref(
+        'select filename, contents from files;', { Slice => {} }
+    );
+
+    foreach my $database ( @{$files} ) {
+        push @available_projects, $database->{filename} . '[ITEMBREAK]';
+        push @available_projects, $database->{contents} . '[NEWITEM]';
+    }
+
+    return @available_projects;
+}
+
 1;

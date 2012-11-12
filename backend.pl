@@ -126,6 +126,35 @@ get '/writefiletosql' => sub {
     $self->render( text => $status );
 };
 
+get '/getfilesfromsql' => sub {
+    my $self = shift;
+    use Team::Members;
+
+    my ( @available_projects, $project );
+
+    my $user = Team::Members->new;
+    @available_projects = $user->get_files_from_sql;
+
+    foreach my $item ( @available_projects ) {
+        $project .= $item;
+    }
+
+    $self->render( text => $project );
+};
+
+get '/empty' => sub {
+    my $self = shift;
+
+    my $contents = $self->param( 'contents' );
+
+    $self->render( text => $contents );
+};
+
+get '/list/of/competitions' => sub {
+    my $self = shift;
+    $self->render( text => 'no available competitions' );
+};
+
 app->start;
 
 __DATA__
@@ -197,7 +226,6 @@ $(document).ready(function() {
 
 <p><code>[paste goal here]</code></p>
 
-
 @@ projecthosting.html.ep
 
 <!DOCTYPE html>
@@ -207,14 +235,20 @@ $(document).ready(function() {
 <script src="http://code.jquery.com/jquery-1.8.2.min.js"></script>
 <script src="/projecthostingjs"></script>
 
+
 </head>
 <body>
 
+<h3>Project Hosting</h3>
+
+<h5>Upload A File</h5>
 Select the folder: <input id="folder" type="text"></input></br>
 Select the file: <input id="fakepath" type="file"></input></br>
-<button id="dir" type="button">Get Value</button></br>
+<button id="dir" type="button">Upload File</button></br>
 
-<input id="final_dir" type="text"></input>
+File's Full Directory: <input id="final_dir" type="text"></input>
+
+<h5>Available Projects</h5>
 
 </body>
 </html>
@@ -222,6 +256,20 @@ Select the file: <input id="fakepath" type="file"></input></br>
 @@ projecthostingjs.html.ep
 
 $(document).ready(function() {
+    $.get('http://localhost:3000/getfilesfromsql',
+    function(available_projects) {
+        var projects = available_projects.split('[NEWITEM]');
+        var project_list_length = projects.length;
+        for (var i = 0;i < project_list_length - 1;i++) {
+            var file_to_contents = projects[i].split('[ITEMBREAK]');
+            $('body').append(
+                '<a href="/empty?contents='+file_to_contents[1]+'" class="project" target="_blank">'+file_to_contents[0]+'</a></br></br>'
+            );
+        }
+    });
+    $('h3').click(function() {
+        window.location.replace('/home');
+    });
     $('#dir').click(function() {
         var folder = $('#folder').val();
         var fakepath = $('#fakepath').val();
