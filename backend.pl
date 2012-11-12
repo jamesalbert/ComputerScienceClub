@@ -113,6 +113,19 @@ get '/getfiledata' => sub {
     $self->render( text => $feedback );
 };
 
+get '/writefiletosql' => sub {
+    my $self = shift;
+    use Team::Members;
+
+    my $user = Team::Members->new;
+    my $file_name = $self->param( 'filename' );
+    my $file_contents = $self->param( 'filecontents' );
+
+    my $status = $user->write_file_to_sql( $file_name, $file_contents );
+
+    $self->render( text => $status );
+};
+
 app->start;
 
 __DATA__
@@ -199,7 +212,9 @@ $(document).ready(function() {
 
 Select the folder: <input id="folder" type="text"></input></br>
 Select the file: <input id="fakepath" type="file"></input></br>
-<button id="dir" type="button">Get Value</button>
+<button id="dir" type="button">Get Value</button></br>
+
+<input id="final_dir" type="text"></input>
 
 </body>
 </html>
@@ -216,10 +231,15 @@ $(document).ready(function() {
         function(response) {
             $('#folder').val('');
             $('#fakepath').val('');
-            $('body').append('</br>'+response+'</br>');
+            $('#final_dir').val(response);
+            $('#final_dir').attr('disabled', 'disabled');
             $.get('http://localhost:3000/getfiledata?directory='+response,
             function(file_data) {
-                $('body').append(file_data+'</br>');
+                var new_dir = $('#final_dir').val();
+                $.get('http://localhost:3000/writefiletosql?filename='+new_dir+'&filecontents='+file_data,
+                function(status) {
+                    alert(status);
+                });
             });
         });
     });

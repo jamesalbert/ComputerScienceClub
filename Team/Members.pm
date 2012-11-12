@@ -145,4 +145,21 @@ sub read_from_upload {
     return $code;
 }
 
+sub write_file_to_sql {
+    my ( $self, $file_name, $file_contents ) = @_;
+
+    my $dbh = DBI->connect(
+        'dbi:SQLite:dbname=teamdb'
+    );
+
+    my $sth = $dbh->prepare(
+        "insert into files values( null, \"$file_name\", \"$file_contents\" );"
+    );
+
+    $sth->execute;
+    $dbh->disconnect;
+
+    return 'success';
+}
+
 1;
