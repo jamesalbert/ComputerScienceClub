@@ -76,6 +76,43 @@ get '/goal' => sub {
     $self->render( 'goal' );
 };
 
+get '/projecthosting' => sub {
+    my $self = shift;
+
+    $self->render( 'projecthosting' );
+};
+
+get '/projecthostingjs' => sub {
+    my $self = shift;
+
+    $self->render( 'projecthostingjs' );
+};
+
+get '/uploadfile' => sub {
+    use Team::Members;
+    my $self = shift;
+
+    my $user      = Team::Members->new;
+    my $file_name = $self->param( 'filename' );
+    my $folder    = $self->param( 'folder' );
+
+    my $file = $user->upload_file( $file_name, $folder );
+
+    $self->render( text => $file );
+};
+
+get '/getfiledata' => sub {
+    my $self = shift;
+    use Team::Members;
+
+    my $user = Team::Members->new;
+    my $directory = $self->param( 'directory' );
+
+    my $feedback = $user->read_from_upload( $directory );
+
+    $self->render( text => $feedback );
+};
+
 app->start;
 
 __DATA__
@@ -100,19 +137,24 @@ __DATA__
 
 <h5>Submit New Member</h5>
 
-<input id="name" type="text"></input></br>
-<select id="position">
+Name: <input id="name" type="text"></input></br>
+Position: <select id="position">
     <option value="Programmer">Programmer</option>
     <option value="Designer">Designer</option>
-</select>
-<select id="grade">
+</select></br>
+Grade: <select id="grade">
     <option value="9">9</option>
     <option value="10">10</option>
     <option value="11">11</option>
     <option value="12">12</option>
-</select>
+</select></br>
 
-<button id="submit_new_member" type="button">Submit</button>
+<button id="submit_new_member" type="button">Submit</button></br>
+
+</br></br>
+
+<a href="/list/of/competitions">Check the list of competitions</a>
+<a href="/projecthosting">Try experimental project hosting</a>
 
 </body>
 </html>
@@ -142,6 +184,46 @@ $(document).ready(function() {
 
 <p><code>[paste goal here]</code></p>
 
+
+@@ projecthosting.html.ep
+
+<!DOCTYPE html>
+<html>
+<head>
+
+<script src="http://code.jquery.com/jquery-1.8.2.min.js"></script>
+<script src="/projecthostingjs"></script>
+
+</head>
+<body>
+
+Select the folder: <input id="folder" type="text"></input></br>
+Select the file: <input id="fakepath" type="file"></input></br>
+<button id="dir" type="button">Get Value</button>
+
+</body>
+</html>
+
+@@ projecthostingjs.html.ep
+
+$(document).ready(function() {
+    $('#dir').click(function() {
+        var folder = $('#folder').val();
+        var fakepath = $('#fakepath').val();
+        var dir_paths = fakepath.split('\\');
+        var file = dir_paths.pop();
+        $.get('http://localhost:3000/uploadfile?filename='+file+'&folder='+folder,
+        function(response) {
+            $('#folder').val('');
+            $('#fakepath').val('');
+            $('body').append('</br>'+response+'</br>');
+            $.get('http://localhost:3000/getfiledata?directory='+response,
+            function(file_data) {
+                $('body').append(file_data+'</br>');
+            });
+        });
+    });
+});
 
 @@ team.html.ep
 

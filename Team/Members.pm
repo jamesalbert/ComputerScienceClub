@@ -113,4 +113,36 @@ sub check_params {
     return $missing_link;
 }
 
+sub upload_file {
+    my ( $self, $file_name, $folder ) = @_;
+    use File::Find;
+
+    our $prefix = $folder;
+    our $suffix = $file_name;
+    our $result;
+
+    find( \&wanted, $ENV{HOME} );
+
+    sub wanted {
+        if ( $_ eq $suffix ) {
+
+            my @folders = split(/\//, $File::Find::dir);
+
+            my $containing_folder = pop(@folders);
+
+            $result = $File::Find::name if $containing_folder eq $prefix;
+        }
+    }
+    return $result;
+}
+
+sub read_from_upload {
+    my ( $self, $directory ) = @_;
+    use File::Slurp qw/read_file/;
+
+    my $code = read_file( $directory );
+
+    return $code;
+}
+
 1;
