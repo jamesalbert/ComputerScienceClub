@@ -195,8 +195,8 @@ Grade: <select id="grade">
 
 </br></br>
 
-<a href="/list/of/competitions">Check the list of competitions</a>
-<a href="/projecthosting">Try experimental project hosting</a>
+<a href="/list/of/competitions" target="_blank">Check the list of competitions</a>
+<a href="/projecthosting" target="_blank">Try experimental project hosting</a>
 
 </body>
 </html>
@@ -211,12 +211,18 @@ $(document).ready(function() {
         var name = $('#name').val();
         var position = $('#position').val();
         var grade = $('#grade').val();
-        $.get('http://localhost:3000/teamdb?all=newmember&name='+name+'&position='+position+'&grade='+grade,
-        function(status) {
-            alert(status);
-            $('#name').val('');
-            //window.location.reload();
-        });
+        if (name != '') {
+            $.get('http://localhost:3000/teamdb?all=newmember&name='+name+'&position='+position+'&grade='+grade,
+            function(status) {
+                alert(status);
+                $('#name').val('');
+                //window.location.reload();
+            });
+        }
+        else {
+            alert('wrong data given');
+            window.location.reload();
+        }
     });
 });
 
@@ -242,11 +248,12 @@ $(document).ready(function() {
 <h3>Project Hosting</h3>
 
 <h5>Upload A File</h5>
-Select the folder: <input id="folder" type="text"></input></br>
-Select the file: <input id="fakepath" type="file"></input></br>
+Select the folder (not directory): <input id="folder" type="text"></input></br>
+Select the file: <input id="filename" type="text"></input></br>
 <button id="dir" type="button">Upload File</button></br>
 
 File's Full Directory: <input id="final_dir" type="text"></input>
+<button id="update_db" type="button">Update DB</button>
 
 <h5>Available Projects</h5>
 
@@ -272,24 +279,33 @@ $(document).ready(function() {
     });
     $('#dir').click(function() {
         var folder = $('#folder').val();
-        var fakepath = $('#fakepath').val();
-        var dir_paths = fakepath.split('\\');
-        var file = dir_paths.pop();
-        $.get('http://localhost:3000/uploadfile?filename='+file+'&folder='+folder,
-        function(response) {
-            $('#folder').val('');
-            $('#fakepath').val('');
-            $('#final_dir').val(response);
-            $('#final_dir').attr('disabled', 'disabled');
-            $.get('http://localhost:3000/getfiledata?directory='+response,
-            function(file_data) {
-                var new_dir = $('#final_dir').val();
-                $.get('http://localhost:3000/writefiletosql?filename='+new_dir+'&filecontents='+file_data,
-                function(status) {
-                    alert(status);
+        var filename = $('#filename').val();
+        if (folder != '' && filename != '') {
+            $.get('http://localhost:3000/uploadfile?filename='+filename+'&folder='+folder,
+            function(response) {
+                $('#folder').val('')
+                    .attr('disabled', 'disabled');
+                $('#filename').val('')
+                    .attr('disabled', 'disabled');
+                $('#final_dir').val(response);
+                $('#final_dir').attr('disabled', 'disabled');
+                $.get('http://localhost:3000/getfiledata?directory='+response,
+                function(file_data) {
+                    var new_dir = $('#final_dir').val();
+                    $.get('http://localhost:3000/writefiletosql?filename='+new_dir+'&filecontents='+file_data,
+                    function(status) {
+                        alert(status);
+                    });
                 });
             });
-        });
+        }
+        else {
+            alert('Wrong or no data given');
+            window.location.reload();
+        }
+    });
+    $('#update_db').click(function() {
+        window.location.reload();
     });
 });
 
